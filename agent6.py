@@ -254,13 +254,19 @@ async def run(query: str, scenario_num: int | None = None) -> str:
     iters_expected = SCENARIO_EXPECTED_ITERS.get(snum, 7)
     passed = iters_used <= iters_expected * 2 and answer != "No answer produced."
 
+    # run_result tracks the iteration-count pass/fail rule from s6.md:
+    # "Queries that exceed twice the expected iteration count are not considered passing."
+    # PoP (Prompt of Prompts) = the system prompts in each perception/decision record above.
+    # The perception and decision JSONL records with system_prompt are the PoP deliverable.
     _append_jsonl(jsonl_path, {
-        "type": "pop_validation",
+        "type": "run_result",
         "scenario": snum,
         "query": query,
         "all_goals_done": obs.all_done,
         "iterations_used": iters_used,
         "iterations_expected": iters_expected,
+        "pass_threshold": iters_expected * 2,
+        "rule": "iters_used <= iters_expected * 2  (from s6.md assignment section)",
         "answer_preview": answer[:500],
         "passed": passed,
     })
@@ -269,7 +275,7 @@ async def run(query: str, scenario_num: int | None = None) -> str:
     print(f"FINAL ANSWER:\n{answer}")
     print(f"{'='*70}")
     print(f"iterations used: {iters_used}  (expected ≤{iters_expected * 2})")
-    print(f"PoP validation : {'PASS [done]' if passed else 'FAIL ✗'}")
+    print(f"Run result     : {'PASS' if passed else 'FAIL'}")
 
     return answer
 

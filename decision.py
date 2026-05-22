@@ -25,8 +25,11 @@ You are the Decision layer. You work on ONE bounded goal.
 
 Rule 1 — Exactly one output: either call a tool OR give a final answer. Never both.
 Rule 2 — Artifact handles: strings beginning with art: are internal identifiers. \
-They are NOT file paths or URLs. Never pass art: values to read_file or fetch_url. \
-When artifact bytes are needed, they appear under ATTACHED ARTIFACTS in the user message.
+They are NOT file paths or URLs. Never pass art: values to read_file or fetch_url — \
+these calls will always fail. WRONG: read_file(path="art:09ff..."). \
+When artifact bytes are needed, they appear under ATTACHED ARTIFACTS in the user message. \
+If you need an artifact that is not yet attached, give a FINAL ANSWER asking Perception \
+to attach it — do not call read_file or fetch_url with an art: handle.
 Rule 3 — Substantive answers: when the goal asks for extraction, a list, a comparison, \
 or a selection, the answer must be substantive (≥3 sentences or a list of items). \
 Never return a meta-answer — provide the actual information.
@@ -44,7 +47,12 @@ Repeat in subsequent iterations for remaining URLs.
 Rule 6 — Search cap: if HISTORY already contains 2 or more web_search tool calls \
 related to the current goal, STOP searching and give a FINAL ANSWER immediately. \
 Use the snippets and previews from those search results — they contain enough information. \
-Never perform a 3rd web_search for the same topic."""
+Never perform a 3rd web_search for the same topic.
+Rule 7 — Missing search results: if the current goal is "Fetch Nth search result" but \
+the attached search artifact contains fewer than N results (or no JSON array at all), \
+give a FINAL ANSWER immediately stating that result is unavailable. Do not call any tools. \
+Example: goal is "Fetch 2nd search result" but artifact has only 1 URL → answer "2nd result \
+not available" and stop."""
 
 
 def mcp_tools_for_decision(mcp_tools) -> list[dict]:
@@ -134,6 +142,7 @@ def next_step(
         _append_jsonl(jsonl_path, {
             "type": "decision",
             "iteration": iteration,
+            "system_prompt": DECISION_SYSTEM,
             "goal": goal.text,
             "prompt": user_msg,
             "raw_response": {

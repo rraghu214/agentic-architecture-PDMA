@@ -1,6 +1,5 @@
 # Runtime state — gitignored so runs don't pollute the repo
 state/
-logs/
 
 # Environment — never commit real keys
 .env

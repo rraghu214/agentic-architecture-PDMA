@@ -35,9 +35,13 @@ ordered sub-goals. Rules:
 goal using "and". BAD: "Find activities and check weather and recommend". \
 GOOD: separate goals "Find activities", "Check weather", "Recommend best option".
 - Each goal must be achievable in ONE tool call or one answer.
-- If the query requires reading/fetching multiple URLs (e.g. "read top 3 results"), \
-create ONE goal per fetch: "Fetch 1st search result", "Fetch 2nd search result", \
-"Fetch 3rd search result". NEVER bundle multiple fetches into one goal.
+- Create "Fetch Nth result" goals ONLY when the user EXPLICITLY asks to read/visit/fetch \
+individual pages (e.g. "read the top 3 results", "fetch each URL", "visit those pages"). \
+For general information queries — "find activities", "search for X", "check the weather" — \
+ONE search goal is sufficient; Decision uses the search snippets without fetching full pages. \
+BAD for "Find 3 activities in Tokyo": "Fetch 1st result", "Fetch 2nd result", "Fetch 3rd result". \
+GOOD for "Find 3 activities in Tokyo": ONE goal "Search for family-friendly activities in Tokyo". \
+GOOD for "read the top 3 results": separate "Fetch 1st result", "Fetch 2nd result", "Fetch 3rd result".
 - End with a synthesis/answer goal (e.g. "Summarise/compare/list from fetched pages").
 Return all done=false.
 
@@ -226,6 +230,7 @@ def observe(
         _append_jsonl(jsonl_path, {
             "type": "perception",
             "iteration": iteration,
+            "system_prompt": SYSTEM_PROMPT,
             "prompt": user_msg,
             "raw_response": reply.get("text") or json.dumps(reply.get("parsed")),
             "goals": [g.model_dump() for g in obs.goals],

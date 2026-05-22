@@ -30,7 +30,7 @@ SCENARIOS = {
         ),
     },
     "C1": {
-        "num": 3,
+        "num": 3.1,
         "label": "Query C Run 1 - Mom's birthday store (durable memory write)",
         "query": (
             "My mom's birthday is 15 May 2026. Remember that and give me a calendar "
@@ -38,12 +38,12 @@ SCENARIOS = {
         ),
     },
     "C2": {
-        "num": 4,
+        "num": 3.2,
         "label": "Query C Run 2 - Mom's birthday recall (cross-run, zero tool calls expected)",
         "query": "When is mom's birthday?",
     },
     "D": {
-        "num": 5,
+        "num": 4,
         "label": "Query D - Python asyncio best practices (multi-artifact synthesis)",
         "query": (
             "Search for 'Python asyncio best practices', read the top 3 results, "
