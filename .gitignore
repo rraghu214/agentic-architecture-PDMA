@@ -1,0 +1,43 @@
+# Runtime state — gitignored so runs don't pollute the repo
+state/
+logs/
+
+# Environment — never commit real keys
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Gateway DB and cache
+llm_gatewayV3/gateway_v3.db
+llm_gatewayV3/.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+session_notes/
+
+# Windows thumbnails / metadata
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# uv / pyenv
+.python-version
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+youtube_narration.txt
