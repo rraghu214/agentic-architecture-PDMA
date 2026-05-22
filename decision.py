@@ -18,7 +18,7 @@ from pathlib import Path
 from schemas import DecisionOutput, Goal, MemoryItem, ToolCall
 
 sys.path.insert(0, str(Path(__file__).parent / "llm_gatewayV3"))
-from client import LLM  # noqa: E402
+from llm_gatewayV3.client import LLM  # noqa: E402
 
 DECISION_SYSTEM = """\
 You are the Decision layer. You work on ONE bounded goal.
@@ -52,7 +52,13 @@ Rule 7 — Missing search results: if the current goal is "Fetch Nth search resu
 the attached search artifact contains fewer than N results (or no JSON array at all), \
 give a FINAL ANSWER immediately stating that result is unavailable. Do not call any tools. \
 Example: goal is "Fetch 2nd search result" but artifact has only 1 URL → answer "2nd result \
-not available" and stop."""
+not available" and stop.
+Rule 8 — Synthesize from attached content: if the current goal is to synthesize, list, \
+compare, summarize, or provide a numbered list of findings, AND ATTACHED ARTIFACTS contains \
+content (fetched pages, search results, or prior answers), give a FINAL ANSWER immediately \
+by extracting the answer directly from that content. Do NOT call web_search, fetch_url, \
+list_dir, read_file, or any other tool. The attached content IS the source material — \
+synthesize from it now."""
 
 
 def mcp_tools_for_decision(mcp_tools) -> list[dict]:

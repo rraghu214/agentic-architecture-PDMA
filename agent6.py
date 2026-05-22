@@ -53,13 +53,13 @@ GATEWAY_URL = "http://localhost:8101"
 LOGS_DIR = Path("logs")
 
 SCENARIO_LABELS = {
-    1: "Claude Shannon Wikipedia — artifact attach",
-    2: "Tokyo activities + weather — multi-goal",
-    3: "Mom's birthday Run 1 — durable memory write",
-    4: "Mom's birthday Run 2 — cross-run recall",
-    5: "Python asyncio best practices — multi-artifact synthesis",
+    1:   "Claude Shannon Wikipedia — artifact attach",
+    2:   "Tokyo activities + weather — multi-goal",
+    3.1: "Mom's birthday Run 1 — durable memory write",
+    3.2: "Mom's birthday Run 2 — cross-run recall",
+    4:   "Python asyncio best practices — multi-artifact synthesis",
 }
-SCENARIO_EXPECTED_ITERS = {1: 3, 2: 6, 3: 4, 4: 2, 5: 7}
+SCENARIO_EXPECTED_ITERS = {1: 3, 2: 6, 3.1: 4, 3.2: 2, 4: 7}
 
 
 # -- Gateway health check -----------------------------------------------------
@@ -122,7 +122,7 @@ def final_answer_from(history: list[dict]) -> str:
 
 # -- Main loop ----------------------------------------------------------------
 
-async def run(query: str, scenario_num: int | None = None) -> str:
+async def run(query: str, scenario_num: float | int | None = None) -> str:
     ensure_gateway()
 
     run_id = uuid.uuid4().hex[:8]
@@ -285,7 +285,7 @@ async def run(query: str, scenario_num: int | None = None) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="PMDA Agent6")
     parser.add_argument("query", help="The query to answer")
-    parser.add_argument("--scenario", type=int, default=None,
+    parser.add_argument("--scenario", type=float, default=None,
                         help="Scenario number for JSONL log naming (auto-detected if omitted)")
     args = parser.parse_args()
     asyncio.run(run(args.query, scenario_num=args.scenario))

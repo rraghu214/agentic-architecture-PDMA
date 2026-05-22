@@ -21,7 +21,7 @@ from pathlib import Path
 from schemas import Goal, MemoryItem, Observation, PerceptionObservation
 
 sys.path.insert(0, str(Path(__file__).parent / "llm_gatewayV3"))
-from client import LLM  # noqa: E402
+from llm_gatewayV3.client import LLM  # noqa: E402
 
 SYNTHESIS_KEYWORDS = {"synthesise", "synthesize", "extract", "list", "compare", "decide", "summarise", "summarize"}
 
@@ -205,22 +205,24 @@ def observe(
 
     # Force-attach safety net
     unfinished = next((g for g in goals if not g.done), None)
-    if unfinished and unfinished.attach_artifact_id is None and artifact_hits:
+    if unfinished and artifact_hits:
         words = set(unfinished.text.lower().split())
 
-        # Case 1: "Fetch/Read Nth search result / URL / page" goals need the web_search
-        # artifact so Decision can parse URLs and call fetch_url on the right one.
+        # Case 1: "Fetch/Read Nth search result / URL / page" goals MUST always have the
+        # web_search artifact so Decision can parse URLs. Override even if Perception LLM
+        # already set an artifact_index — it may have picked a fetched-page blob instead of
+        # the search-results JSON, which produces an empty URL and a wasted iteration.
         fetch_trigger = {"fetch", "read", "get"} & words
         url_trigger = {"result", "url", "page", "link"} & words
         if fetch_trigger and url_trigger:
             ws_hits = [(i, h) for i, h in artifact_hits
                        if isinstance(h.value, dict) and h.value.get("tool") == "web_search"]
             if ws_hits:
-                # Attach oldest web_search artifact = primary search results
+                # Always override to oldest web_search artifact = primary search results
                 unfinished.attach_artifact_id = ws_hits[-1][1].artifact_id
 
-        # Case 2: synthesis goals — attach most recent artifact
-        elif words & SYNTHESIS_KEYWORDS:
+        # Case 2: synthesis goals — attach most recent artifact (only when not already set)
+        elif unfinished.attach_artifact_id is None and words & SYNTHESIS_KEYWORDS:
             unfinished.attach_artifact_id = artifact_hits[-1][1].artifact_id
 
     obs = Observation(goals=goals)
